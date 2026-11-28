@@ -27,7 +27,9 @@ as it is and the jommi.fi Worker passes `/sauna/berlin/` through to it.
 - `city.json` also says the currency sign (`"currency"`) and whether Urban Sports Club exists
   there (`"usc"`); without it the page drops the USC chip, figure, legend dot and card row. The
   price bands are the same numbers in every currency, which is rough but fine for euros and
-  dollars. Filter chips that no venue in a city could match hide themselves.
+  dollars. Filter chips that no venue in a city could match hide themselves, and so do chips
+  that every venue matches, because pressing one would change nothing ("not a hotel" outside
+  Berlin, "day ticket" where every place sells one).
 - The other cities were built to the same sourcing rule as Berlin: every venue passed
   `verify_venue.py`, and every price and hour was read off its own site. Where a site renders
   prices with a script, or does not say who throws the water, the field is empty rather than
@@ -193,8 +195,10 @@ viewport meta is missing and everything measured after that is meaningless.
 The page is built like a places app. Search and filters are one row above
 everything; under it, on a computer, the list sits in a sidebar beside the map,
 and on a phone the map fills a framed screen with the list riding up over it as
-a sheet that collapses to its handle and the place count. Rules that keep it
-coherent:
+a sheet that collapses to its handle and the place count. A "map / list" switch beside the
+search on a phone (`#view`) raises the sheet over the whole frame or lowers it; it is the same
+state as the handle (`openSheet`), and the phone remembers it (`localStorage`, `sauna.view`).
+Rules that keep it coherent:
 
 - The look is an index: white and ink, one light sans (Inter Tight) set very large for the
   title, monospaced capitals (IBM Plex Mono) for every label, tag, chip and button, hairlines in
