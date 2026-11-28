@@ -29,7 +29,10 @@ as it is and the jommi.fi Worker passes `/sauna/berlin/` through to it.
   price bands are the same numbers in every currency, which is rough but fine for euros and
   dollars. Filter chips that no venue in a city could match hide themselves, and so do chips
   that every venue matches, because pressing one would change nothing ("not a hotel" outside
-  Berlin, "day ticket" where every place sells one).
+  Berlin, "day ticket" where every place sells one). "pool or plunge" counts open water: a venue
+  whose pool text starts "No pool" still matches when it names a plunge, the sea, the bay or an
+  ice hole (Fjord and Good Hot plunge in the Bay). There is no price slider: the owner had it
+  removed on 28 November 2026 as useless.
 - The other cities were built to the same sourcing rule as Berlin: every venue passed
   `verify_venue.py`, and every price and hour was read off its own site. Where a site renders
   prices with a script, or does not say who throws the water, the field is empty rather than
@@ -211,14 +214,16 @@ Rules that keep it coherent:
   on one line at about two thirds of its old size with the figures beside it, no collage above
   the map (`.collage` is hidden on the page), and one row of filters with the kind and USC-tier
   groups behind "more filters" on a computer. On a phone the figures are one slim row. On a
-  1440 by 900 laptop the map starts about 260 px down; do not add anything
+  1440 by 900 laptop the map starts about 260 px down. The page opens on the title itself: the
+  line saying "sauna maps / <city> · checked <date>", with its link up to the hub, is in the
+  footer's small print (`.fine`) since 28 November 2026; do not add anything
   above the filter bar without checking that. The share image is the exception: `og.js` puts the
   header back at full size, collage included, because a picture has no map to make room for.
-- The sauna is in three marks and no more. Birch bark fades in from the top of the page
-  (`--bark`), the title thins toward its top edge like steam (`--title-fade`), and a
-  thermometer line runs under the header from cold blue to hot red (`--cold`,
+- The sauna is in two marks and no more. Birch bark fades in from the top of the page
+  (`--bark`), and a thermometer line runs under the header from cold blue to hot red (`--cold`,
   `--cool`, `--mild`, `--warm`, `--hot`), with no words on it since 27 November 2026. The hottest figure is `--hot` and plunge
-  temperatures are `--cold`.
+  temperatures are `--cold`. The title is solid ink: it used to thin toward its top edge like
+  steam, and the owner found that read as a fault (28 November 2026).
 - Both typefaces are under the SIL Open Font License and live in `engine/fonts` with their
   licences. `assemble.py` copies them into one `fonts/` folder at the repo root, beside the
   cities, and every page loads them from `../fonts/`, so no visitor's browser calls a font
@@ -260,8 +265,8 @@ Rules that keep it coherent:
   carries the link to the repository with GitHub's mark.
 - **The map page says as little as it can** (the owner, 27 November 2026: "way too wordy").
   Under the header it is the filters, the list and map, fast picks, the leaderboard and a
-  footer of three links (about, the panel, GitHub) over one line of OpenStreetMap attribution
-  (`.fine`). No lede on the page (it is in the share image only), no blurb under "fast picks",
+  footer of three links (about, the panel, GitHub) over one line of small print (`.fine`): the
+  way up to the hub, the date the venues were checked, and OpenStreetMap's attribution. No lede on the page (it is in the share image only), no blurb under "fast picks",
   one short line under "leaderboard". Do not add explanatory prose to the map page: it goes on
   the about page.
 - Everything else is on `<city>/about/`, a page `assemble.py` writes from `engine/about.html`
@@ -280,7 +285,7 @@ Rules that keep it coherent:
   coordinates only.
 - The account stands in the top right corner of the page (`#acct` in `header.top`, not in the
   filter bar): an outlined "sign in" when signed out, the avatar and handle when signed in, with
-  its menu hanging from the right edge. On a phone the line above the title makes room for it.
+  its menu hanging from the right edge. On a phone the title keeps clear of it.
 - The panel is a dialog (`#panel-d`), opened by "the panel" in the footer and by the panel line
   in the account menu (`openPanel`). It is one panel for every city, so no page carries it as a
   section; the owner asked for that on 27 November 2026. The line about who adds listings is on
