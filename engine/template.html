@@ -775,6 +775,10 @@ body{letter-spacing:0}
 /* on a computer the switch is one of the row of chips, so it is their height; the price it reads
    out is a label like the rest */
 @media (min-width:1001px){ .unit{height:30px; padding:2px} .unit button{min-width:32px} }
+/* On a phone the list rides over the map as a sheet; this switch swaps between the two outright.
+   A computer shows both side by side, so it has no use for it. */
+.view{display:none}
+@media (max-width:1000px){ .view{display:inline-flex} .find{min-width:0} .find input{min-width:0} }
 .slide output{font:500 11px var(--mono); letter-spacing:.05em; text-transform:uppercase; min-width:34px}
 .chip{background:none; box-shadow:inset 0 0 0 1px var(--sep); height:30px; line-height:30px !important} .chip:hover{background:var(--tint-soft)} .chip[aria-pressed="true"]{background:var(--label); color:var(--bg)}
 .lhead h2, .sec-h{font:300 32px/1.05 var(--font-display); letter-spacing:-.035em}
@@ -899,6 +903,10 @@ button.src{border:0; cursor:pointer}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
           <input type="search" id="q" placeholder="search saunas" aria-label="Search saunas" autocomplete="off">
         </label>
+        <div class="unit view" id="view" role="group" aria-label="Show the map or the list">
+          <button type="button" data-view="map" aria-pressed="true">map</button>
+          <button type="button" data-view="list" aria-pressed="false">list</button>
+        </div>
         <div class="unit" id="unit" role="group" aria-label="Temperature unit">
           <button type="button" data-u="C" aria-pressed="false" title="Show temperatures in Celsius">&deg;C</button>
           <button type="button" data-u="F" aria-pressed="false" title="Show temperatures in Fahrenheit">&deg;F</button>
@@ -1467,10 +1475,16 @@ const TEST = {
   been:   v => ME.been.has(v.name),
   notyet: v => !ME.been.has(v.name),
 };
-/* A chip no venue in this city could ever match (no hotel spas, no group hire) is not offered. */
+/* A chip no venue in this city could ever match (no hotel spas, no group hire) is not offered,
+   and neither is one that every venue matches, since pressing it would change nothing: "not a
+   hotel" in a city with no hotel spas, "day ticket" where every place sells one. */
 document.querySelectorAll('.chip[data-v]').forEach(c => {
   const t = TEST[c.dataset.v];
-  if (t && !["open", "saved", "been", "notyet", "usc"].includes(c.dataset.v) && !V.some(t)) c.hidden = true;
+  if (t && !["open", "saved", "been", "notyet", "usc"].includes(c.dataset.v) && (!V.some(t) || V.every(t))) c.hidden = true;
+});
+/* a group left with no chip to show takes its gap in the row with it */
+document.querySelectorAll("#g-access, #g-kind").forEach(g => {
+  if ([...g.querySelectorAll(".chip")].every(c => c.hidden || (!USC && c.classList.contains("usc-only")))) g.hidden = true;
 });
 function ok(v){
   if (F.openNow && openState(v, cityNow()) !== "open") return false;
@@ -1791,19 +1805,25 @@ const listcol = document.querySelector(".listcol");
 const peekEl = document.getElementById("peek"), grab = document.getElementById("grab");
 const grabLabel = document.getElementById("grab-label");
 let COLLAPSED = 72;
-const expandedH = () => Math.round(document.querySelector(".split").clientHeight * 0.92);
+const expandedH = () => document.querySelector(".split").clientHeight;   // the list view takes the whole frame
 const isMobile = () => matchMedia("(max-width:1000px)").matches;
 /* Collapsed, the sheet shows only its grabber and the place count, so the map
    keeps the screen; search and filters sit in their own row above the map. */
 const sheetHead = document.querySelector(".listcol .lhead");
 function measureSheet(){ COLLAPSED = Math.round(grab.offsetHeight + sheetHead.offsetHeight + 2); }
 let sheetOpen = false;
+/* The map / list switch beside the search is the same thing as raising and lowering the sheet,
+   so the two stay in step, and a phone remembers which one its owner left it on. */
+const viewBox = document.getElementById("view");
+viewBox.addEventListener("click", e => { const b = e.target.closest("[data-view]"); if (b) openSheet(b.dataset.view === "list"); });
 
 function setSheet(px){ document.documentElement.style.setProperty("--sheet", px + "px"); }
 function openSheet(on){
   sheetOpen = on;
   listcol.classList.toggle("open", on);
   grab.setAttribute("aria-expanded", String(on));
+  viewBox.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.view === "list") === on)));
+  try { localStorage.setItem("sauna.view", on ? "list" : "map"); } catch {}
   setSheet(on ? expandedH() : COLLAPSED);
   setTimeout(updateMore, 380);   // after the sheet's height transition
   /* The open sheet already shows the picked card, so the peek card steps aside
@@ -1858,7 +1878,11 @@ grab.addEventListener("pointercancel", grabEnd);
 
 /* keep the sheet honest when the viewport or the filters change */
 addEventListener("resize", () => { if (isMobile()){ measureSheet(); setSheet(sheetOpen ? expandedH() : COLLAPSED); } });
-if (isMobile()){ measureSheet(); setSheet(COLLAPSED); }
+if (isMobile()){
+  measureSheet(); setSheet(COLLAPSED);
+  let last = null; try { last = localStorage.getItem("sauna.view"); } catch {}
+  if (last === "list"){ listcol.style.transition = "none"; openSheet(true); requestAnimationFrame(() => { listcol.style.transition = ""; }); }
+}
 /* Typing into search on a phone lifts the sheet so the results are visible. */
 document.getElementById("q").addEventListener("focus", () => { if (isMobile() && !sheetOpen) openSheet(true); });
 
